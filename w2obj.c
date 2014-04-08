@@ -14,6 +14,21 @@ struct triangle {
     int v1, v2, v3;
 };
 
+struct vertex minus(struct vertex l, struct vertex r){
+    struct vertex temp;
+
+    temp.x = l.x - r.x;
+    temp.y = l.y - r.y;
+    temp.z = l.z - r.z;
+    temp.valid = 1;
+
+    return temp;
+}
+
+float mag(struct vertex v){
+    return sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2));
+}
+
 struct vertex* vertices;
 struct triangle* triangles;
 
@@ -23,8 +38,12 @@ int rc2index(int row, int col){
 
 void createTriangle(int i0, int i1, int i2, int i3){
     //Check shortest diagonal
-    vertex v0 = vertices[i0];
-    v0.
+    struct vertex v0 = vertices[i0];
+    struct vertex v1 = vertices[i1];
+    struct vertex v2 = vertices[i2];
+    struct vertex v3 = vertices[i3];
+
+
     //triangle t;
     //t.v1 = i0;
 }
