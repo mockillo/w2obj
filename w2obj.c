@@ -86,8 +86,6 @@ int readFile(char* filename){
     fread(&cellsize, sizeof(double), 1, file);
     fread(&nodata, sizeof(int), 1, file);
 
-    cellsize = 1;
-
     printf("Reading %s.\n", filename);
     printf("n: %d, m: %d, cellsize: %f\n", numRows, numCols, cellsize);
     printf("llx: %f, lly: %f, nodata: %d\n", llx, lly, nodata);
@@ -140,7 +138,7 @@ int writeFile(char* filename){
         return 0;
     }
 
-    fprintf(file, "mtllib ./%s.mtl\n", filename);
+    //fprintf(file, "mtllib ./%s.mtl\n", filename);
 
     int i;
 
