@@ -35,7 +35,7 @@ int readFile(char* filename){
     printf("llx: %f, lly: %f, nodata: %d\n", llx, lly, nodata);
 
     float temp;
-    vertices = (struct v3*) malloc(sizeof(struct v3) * (n+m));
+    vertices = (struct v3*) malloc(sizeof(struct v3) * (n*m));
 
     int i, j;
     for(i = 0; i < n; i++){
@@ -62,11 +62,31 @@ int readFile(char* filename){
 int writeFile(char* filename){
     FILE* file;
 
-    file = fopen("filename", "w");
+    file = fopen(filename, "w");
 
-    //fprintf(f, )
+    if(!file){
+        printf("Error opening %s, for some reason.\n", filename);
+        return 0;
+    }
+
+    fprintf(file, "mtllib ./%s.mtl\n", filename);
+
+    int i;
+
+    for(i = 0; i < numberOfVertices; i++){
+        fprintf(file, "v %f %f %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
+    }
+
+    fclose(file);
+
+    printf("Wrote vertices to %s\n", filename);
 
     return 1;
+}
+
+void clean(){
+    if(vertices)
+        free(vertices);
 }
 
 int main(int argc, char** argv){
@@ -76,10 +96,16 @@ int main(int argc, char** argv){
     }
 
     if(!readFile(argv[1])){
+        clean();
         return 1;
     }
 
-    free(vertices);
+    if(!writeFile(argv[3])){
+        clean();
+        return 1;
+    }
+
+    clean();
 
     return 0;
 }
