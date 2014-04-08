@@ -146,7 +146,6 @@ int writeFile(char* filename){
     int i;
 
     for(i = 0; i < numberOfVertices; i++){
-        if(vertices[i].valid)
         fprintf(file, "v %f %f %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
     }
 
