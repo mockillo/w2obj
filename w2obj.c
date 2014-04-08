@@ -2,15 +2,32 @@
 #include <stdlib.h>
 #include <math.h>
 
-int n, m, nodata, numberOfVertices;
+int numRows, numCols, nodata, numberOfVertices, numberOfTriangles;
 double llx, lly, cellsize;
 unsigned long filesize;
 
-struct v3 {
-    float x, y, z;
+struct vertex {
+    float x, y, z, valid;
 };
 
-struct v3* vertices;
+struct triangle {
+    int v1, v2, v3;
+};
+
+struct vertex* vertices;
+struct triangle* triangles;
+
+int rc2index(int row, int col){
+    return (col * numRows) + row;
+}
+
+void createTriangle(int i0, int i1, int i2, int i3){
+    //Check shortest diagonal
+    vertex v0 = vertices[i0];
+    v0.
+    //triangle t;
+    //t.v1 = i0;
+}
 
 int readFile(char* filename){
     numberOfVertices = 0;
@@ -23,32 +40,44 @@ int readFile(char* filename){
         return 0;
     }
 
-    fread(&n, sizeof(int), 1, file);
-    fread(&m, sizeof(int), 1, file);
+    fread(&numRows, sizeof(int), 1, file);
+    fread(&numCols, sizeof(int), 1, file);
     fread(&llx, sizeof(double), 1 ,file);
     fread(&lly, sizeof(double), 1, file);
     fread(&cellsize, sizeof(double), 1, file);
     fread(&nodata, sizeof(int), 1, file);
 
     printf("Reading %s.\n", filename);
-    printf("n: %d, m: %d, cellsize: %f\n", n, m, cellsize);
+    printf("n: %d, m: %d, cellsize: %f\n", numRows, numCols, cellsize);
     printf("llx: %f, lly: %f, nodata: %d\n", llx, lly, nodata);
 
     float temp;
-    vertices = (struct v3*) malloc(sizeof(struct v3) * (n*m));
+    vertices = (struct vertex*) malloc(sizeof(struct vertex) * (numRows*numCols));
 
     int i, j;
-    for(i = 0; i < n; i++){
-        for(j = 0; j < m; j++){
+    for(i = 0; i < numRows; i++){
+        for(j = 0; j < numCols; j++){
             fread(&temp, sizeof(float), 1, file);
+            struct vertex v;
+            v.valid = 0;
 
             if(temp > nodata){
-                struct v3 v;
+                v.valid = 1;
                 v.x = (float) i * cellsize;
                 v.z = (float) j * cellsize;
                 v.y = temp;
-                vertices[numberOfVertices++] = v;
             }
+
+            vertices[numberOfVertices++] = v;
+        }
+    }
+
+
+    triangles = (struct triangle*) malloc(sizeof(struct triangle) * (numRows*numCols));
+
+    for(i = 0; i < numRows - 1; i++){
+        for(j = 0; j < numCols - 1; j++){
+            createTriangle(rc2index(i,j), rc2index(i+1, j), rc2index(i, j+1), rc2index(i+1, j+1));
         }
     }
 
