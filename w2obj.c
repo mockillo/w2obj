@@ -43,7 +43,7 @@ void createTriangle(int i0, int i1, int i2, int i3){
     struct vertex v2 = vertices[i2];
     struct vertex v3 = vertices[i3];
 
-    if(!v0.valid || !v1.valid || !v2.valid || !v3.valid)
+    if(v0.valid != 1 || v1.valid != 1 || v2.valid != 1 || v3.valid != 1)
         return;
 
     struct triangle t1, t2;
@@ -105,12 +105,11 @@ int readFile(char* filename){
 
             if(temp > nodata){
                 v.valid = 1;
-                v.x = (float) j * cellsize;
-                v.z = (float) i * cellsize;
+                v.x = (float) i * cellsize;
+                v.z = (float) j * cellsize;
                 v.y = temp;
+                vertices[numberOfVertices++] = v;
             }
-
-            vertices[numberOfVertices++] = v;
         }
     }
 
