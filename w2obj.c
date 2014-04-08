@@ -33,7 +33,7 @@ struct vertex* vertices;
 struct triangle* triangles;
 
 int rc2index(int row, int col){
-    return (col * numRows) + row;
+    return col * numRows + row;
 }
 
 void createTriangle(int i0, int i1, int i2, int i3){
@@ -43,13 +43,33 @@ void createTriangle(int i0, int i1, int i2, int i3){
     struct vertex v2 = vertices[i2];
     struct vertex v3 = vertices[i3];
 
+    struct triangle t1, t2;
 
-    //triangle t;
-    //t.v1 = i0;
+    if(mag(minus(v0, v3)) > mag(minus(v1, v2))){
+        t1.v1 = i0 + 1;
+        t1.v2 = i1 + 1;
+        t1.v3 = i2 + 1;
+
+        t2.v1 = i1 + 1;
+        t2.v2 = i2 + 1;
+        t2.v3 = i3 + 1;
+    } else {
+        t1.v1 = i0 + 1;
+        t1.v2 = i1 + 1;
+        t1.v3 = i3 + 1;
+
+        t2.v1 = i1 + 1;
+        t2.v2 = i2 + 1;
+        t2.v3 = i3 + 1;
+    }
+
+    triangles[numberOfTriangles++] = t1;
+    triangles[numberOfTriangles++] = t2;
 }
 
 int readFile(char* filename){
     numberOfVertices = 0;
+    numberOfTriangles = 0;
     FILE* file;
 
     file = fopen(filename, "r");
@@ -65,6 +85,8 @@ int readFile(char* filename){
     fread(&lly, sizeof(double), 1, file);
     fread(&cellsize, sizeof(double), 1, file);
     fread(&nodata, sizeof(int), 1, file);
+
+    cellsize = 1;
 
     printf("Reading %s.\n", filename);
     printf("n: %d, m: %d, cellsize: %f\n", numRows, numCols, cellsize);
@@ -82,8 +104,8 @@ int readFile(char* filename){
 
             if(temp > nodata){
                 v.valid = 1;
-                v.x = (float) i * cellsize;
-                v.z = (float) j * cellsize;
+                v.x = (float) j * cellsize;
+                v.z = (float) i * cellsize;
                 v.y = temp;
             }
 
@@ -92,7 +114,7 @@ int readFile(char* filename){
     }
 
 
-    triangles = (struct triangle*) malloc(sizeof(struct triangle) * (numRows*numCols));
+    triangles = (struct triangle*) malloc(sizeof(struct triangle) * ((numRows*numCols)*2));
 
     for(i = 0; i < numRows - 1; i++){
         for(j = 0; j < numCols - 1; j++){
@@ -103,6 +125,7 @@ int readFile(char* filename){
     fclose(file);
 
     printf("Read %d vertices from %s\n", numberOfVertices, filename);
+    printf("Generated %d triangles from %s\n", numberOfTriangles, filename);
 
     return 1;
 }
@@ -125,9 +148,13 @@ int writeFile(char* filename){
         fprintf(file, "v %f %f %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
     }
 
+    for(i = 0; i < numberOfTriangles; i++){
+        fprintf(file, "f %d %d %d\n", triangles[i].v1, triangles[i].v2, triangles[i].v3);
+    }
+
     fclose(file);
 
-    printf("Wrote vertices to %s\n", filename);
+    printf("Wrote data to %s\n", filename);
 
     return 1;
 }
@@ -135,6 +162,8 @@ int writeFile(char* filename){
 void clean(){
     if(vertices)
         free(vertices);
+    if(triangles)
+        free(triangles);
 }
 
 int main(int argc, char** argv){
@@ -157,4 +186,3 @@ int main(int argc, char** argv){
 
     return 0;
 }
-
