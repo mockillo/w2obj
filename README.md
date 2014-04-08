@@ -1,4 +1,4 @@
-#Wierd to Obj
+#Weird to Obj
 
 The purpose of this program is to solve a very specific problem; if you ever
 need to convert some wierd, arbitrary bin-format to [wavefront obj](http://en.wikipedia.org/wiki/Wavefront_.obj_file)
