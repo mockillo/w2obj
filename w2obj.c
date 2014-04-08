@@ -33,7 +33,7 @@ struct vertex* vertices;
 struct triangle* triangles;
 
 int rc2index(int row, int col){
-    return row * numRows + col;
+    return row * numCols + col;
 }
 
 void createTriangle(int i0, int i1, int i2, int i3){
