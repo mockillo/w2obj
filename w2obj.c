@@ -113,8 +113,7 @@ int readFile(char* filename){
         }
     }
 
-
-    triangles = (struct triangle*) malloc(sizeof(struct triangle) * ((numRows*numCols)*10));
+    triangles = (struct triangle*) malloc(sizeof(struct triangle) * ((numRows*numCols)*2));
 
     for(i = 0; i < numRows - 1; i++){
         for(j = 0; j < numCols - 1; j++){
