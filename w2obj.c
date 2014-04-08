@@ -33,7 +33,7 @@ struct vertex* vertices;
 struct triangle* triangles;
 
 int rc2index(int row, int col){
-    return col * numRows + row;
+    return row * numRows + col;
 }
 
 void createTriangle(int i0, int i1, int i2, int i3){
@@ -43,9 +43,12 @@ void createTriangle(int i0, int i1, int i2, int i3){
     struct vertex v2 = vertices[i2];
     struct vertex v3 = vertices[i3];
 
+    if(!v0.valid || !v1.valid || !v2.valid || !v3.valid)
+        return;
+
     struct triangle t1, t2;
 
-    if(mag(minus(v0, v3)) > mag(minus(v1, v2))){
+    if(mag(minus(v3, v0)) > mag(minus(v2, v1))){
         t1.v1 = i0 + 1;
         t1.v2 = i1 + 1;
         t1.v3 = i2 + 1;
@@ -143,6 +146,7 @@ int writeFile(char* filename){
     int i;
 
     for(i = 0; i < numberOfVertices; i++){
+        if(vertices[i].valid)
         fprintf(file, "v %f %f %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
     }
 
