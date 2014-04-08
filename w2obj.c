@@ -45,8 +45,8 @@ int readFile(char* filename){
             if(temp > nodata){
                 struct v3 v;
                 v.x = (float) i * cellsize;
-                v.y = (float) j * cellsize;
-                v.z = temp;
+                v.z = (float) j * cellsize;
+                v.y = temp;
                 vertices[numberOfVertices++] = v;
             }
         }
