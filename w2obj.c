@@ -154,9 +154,10 @@ int writeFile(char* objname, char* textureFile){
     int i;
 
     for(i = 0; i < numRows*numCols; i++){
-        if(vertices[i].valid == 1)
+        if(vertices[i].valid == 1){
             fprintf(objfile, "v %f %f %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
-            fprintf(objfile, "vt %f %f", vertices[i].u, vertices[i].v);
+            fprintf(objfile, "vt %f %f\n", vertices[i].u, vertices[i].v);
+        }
     }
 
     fprintf(objfile, "usemtl bergen\n");
