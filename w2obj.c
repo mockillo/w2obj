@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <memory.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -7,7 +8,7 @@ double llx, lly, cellsize;
 unsigned long filesize;
 
 struct vertex {
-    float x, y, z, valid;
+    float x, y, z, valid, index, u, v;
 };
 
 struct triangle {
@@ -33,7 +34,7 @@ struct vertex* vertices;
 struct triangle* triangles;
 
 int rc2index(int row, int col){
-    return row * numCols + col;
+    return col * numRows + row;
 }
 
 void createTriangle(int i0, int i1, int i2, int i3){
@@ -48,22 +49,22 @@ void createTriangle(int i0, int i1, int i2, int i3){
 
     struct triangle t1, t2;
 
-    if(mag(minus(v3, v0)) > mag(minus(v2, v1))){
-        t1.v1 = i0 + 1;
-        t1.v2 = i1 + 1;
-        t1.v3 = i2 + 1;
+    if(mag(minus(v0, v3)) < mag(minus(v1, v2))){
+        t1.v1 = v0.index;
+        t1.v2 = v2.index;
+        t1.v3 = v1.index;
 
-        t2.v1 = i1 + 1;
-        t2.v2 = i2 + 1;
-        t2.v3 = i3 + 1;
+        t2.v1 = v2.index;
+        t2.v2 = v3.index;
+        t2.v3 = v1.index;
     } else {
-        t1.v1 = i0 + 1;
-        t1.v2 = i1 + 1;
-        t1.v3 = i3 + 1;
+        t1.v1 = v0.index;
+        t1.v2 = v2.index;
+        t1.v3 = v3.index;
 
-        t2.v1 = i1 + 1;
-        t2.v2 = i2 + 1;
-        t2.v3 = i3 + 1;
+        t2.v1 = v0.index;
+        t2.v2 = v3.index;
+        t2.v3 = v1.index;
     }
 
     triangles[numberOfTriangles++] = t1;
@@ -71,7 +72,6 @@ void createTriangle(int i0, int i1, int i2, int i3){
 }
 
 int readFile(char* filename){
-    numberOfVertices = 0;
     numberOfTriangles = 0;
     FILE* file;
 
@@ -82,8 +82,8 @@ int readFile(char* filename){
         return 0;
     }
 
-    fread(&numRows, sizeof(int), 1, file);
     fread(&numCols, sizeof(int), 1, file);
+    fread(&numRows, sizeof(int), 1, file);
     fread(&llx, sizeof(double), 1 ,file);
     fread(&lly, sizeof(double), 1, file);
     fread(&cellsize, sizeof(double), 1, file);
@@ -96,28 +96,32 @@ int readFile(char* filename){
     float temp;
     vertices = (struct vertex*) malloc(sizeof(struct vertex) * (numRows*numCols));
 
-    int i, j;
-    for(i = 0; i < numRows; i++){
-        for(j = 0; j < numCols; j++){
+    int col, row;
+    for(col = 0; col < numCols; col++){
+        for(row = 0; row < numRows; row++){
             fread(&temp, sizeof(float), 1, file);
             struct vertex v;
             v.valid = 0;
 
             if(temp > nodata){
                 v.valid = 1;
-                v.x = (float) i * cellsize;
-                v.z = (float) j * cellsize;
+                v.x = (float) col * cellsize;
+                v.z = (float) row * cellsize;
                 v.y = temp;
-                vertices[numberOfVertices++] = v;
+                v.u = col / ((float) numCols - 1.0f);
+                v.v = 1.0f - (row / (float) numRows - 1.0f);
+                v.index = ++numberOfVertices;
             }
+
+            vertices[col * numRows + row] = v;
         }
     }
 
     triangles = (struct triangle*) malloc(sizeof(struct triangle) * ((numRows*numCols)*2));
 
-    for(i = 0; i < numRows - 1; i++){
-        for(j = 0; j < numCols - 1; j++){
-            createTriangle(rc2index(i,j), rc2index(i+1, j), rc2index(i, j+1), rc2index(i+1, j+1));
+    for(col = 0; col < numCols - 1; col++){
+        for(row = 0; row < numRows - 1; row++){
+            createTriangle(rc2index(row,col), rc2index(row, col+1), rc2index(row+1, col), rc2index(row+1, col+1));
         }
     }
 
@@ -129,31 +133,51 @@ int readFile(char* filename){
     return 1;
 }
 
-int writeFile(char* filename){
-    FILE* file;
+int writeFile(char* objname, char* textureFile){
+    FILE* objfile;
+    FILE* mtlfile;
 
-    file = fopen(filename, "w");
+    char* mtlname = (char*) malloc(sizeof(char) * strlen(textureFile) + 5);
+    strcpy(mtlname, objname);
+    strcat(mtlname, ".mtl");
 
-    if(!file){
-        printf("Error opening %s, for some reason.\n", filename);
+    objfile = fopen(objname, "w");
+    mtlfile = fopen(mtlname, "w");
+
+    if(!objfile){
+        printf("Error opening %s, for some reason.\n", objname);
         return 0;
     }
 
-    //fprintf(file, "mtllib ./%s.mtl\n", filename);
+    fprintf(objfile, "mtllib ./%s.mtl\n", objname);
 
     int i;
 
-    for(i = 0; i < numberOfVertices; i++){
-        fprintf(file, "v %f %f %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
+    for(i = 0; i < numRows*numCols; i++){
+        if(vertices[i].valid == 1)
+            fprintf(objfile, "v %f %f %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
+            fprintf(objfile, "vt %f %f", vertices[i].u, vertices[i].v);
     }
 
+    fprintf(objfile, "usemtl bergen\n");
     for(i = 0; i < numberOfTriangles; i++){
-        fprintf(file, "f %d %d %d\n", triangles[i].v1, triangles[i].v2, triangles[i].v3);
+        fprintf(objfile, "f %d/%d %d/%d %d/%d\n", triangles[i].v1, triangles[i].v1, triangles[i].v2, triangles[i].v2, triangles[i].v3, triangles[i].v3);
+
     }
 
-    fclose(file);
+    fprintf(mtlfile, "newmtl bergen\n");
+    fprintf(mtlfile, "Ka 1.000 1.000 1.000\n");
+    fprintf(mtlfile, "Kd 1.000 1.000 1.000\n");
+    fprintf(mtlfile, "Ks 1.000 1.000 1.000\n");
+    fprintf(mtlfile, "Tr 0.000\n");
+    fprintf(mtlfile, "illum 2\n");
+    fprintf(mtlfile, "map_Kd %s\n", textureFile);
 
-    printf("Wrote data to %s\n", filename);
+    fclose(objfile);
+    fclose(mtlfile);
+
+    printf("Wrote data to %s and %s\n", objname, mtlname);
+    free(mtlname);
 
     return 1;
 }
@@ -176,7 +200,7 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    if(!writeFile(argv[3])){
+    if(!writeFile(argv[3], argv[2])){
         clean();
         return 1;
     }

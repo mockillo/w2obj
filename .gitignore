@@ -1,3 +1,8 @@
 w2obj
 *.obj
 w2obj.o
+*.bin
+*.mtl
+*.png
+*.jpg
+*.gif
