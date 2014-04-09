@@ -6,10 +6,9 @@ need to convert some wierd, arbitrary bin-format to [wavefront obj](http://en.wi
 
 Usage:
 
-> make  
-> make run
-
-
+```
+Usage: w2obj <inputfile> <texturefile> <outputfile>
+```
 
 The specifications for the bin-format is as follows:
 
