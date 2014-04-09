@@ -75,7 +75,7 @@ int readFile(char* filename){
     numberOfTriangles = 0;
     FILE* file;
 
-    file = fopen(filename, "r");
+    file = fopen(filename, "rb");
 
     if(!file){
         printf("Unable to open file %s\n", filename);
